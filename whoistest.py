@@ -12,33 +12,31 @@ def findWhoIs(ip):
     url = "http://whois.kisa.or.kr/openapi/whois.jsp?query="+ip_address+"&key="+key+"&answer=json"
 
     req = requests.get(url)
-    json_response = json.loads(req.content)
     
     country_code=""
     isp_name=""
     user_name=""
     
-    
     #error 
-    if 'krdomain' in json_response["whois"]:
-        if 'error' in json_response["whois"]["krdomain"]:
-            print("ERROR")
-            err= json_response["whois"]["krdomain"]["error"]["error_code"]
-            print(err)
-            if err=="000":
-                print("시스템오류")
-            elif err=="012":
-                print("잘못된 쿼리")
-            elif err=="021":
-                print("등록되지 않은 키")
-            elif err=="022":
-                print("사용할 수 없는 키")
-            elif err=="031":
-                print("잘못된 주소형식")
-            elif err=="9NNNN":
-                print("서버오류")
-            return "error",
+    if req.text.find("error_code") !=-1:
+        index= req.text.find("error_code")
+        print("ERROR  ",end="")
+        err= req.text[index+13:index+16]
+        if err=="000":
+            print("시스템오류")
+        elif err=="012":
+            print("잘못된 쿼리")
+        elif err=="021":
+            print("등록되지 않은 키")
+        elif err=="022":
+            print("사용할 수 없는 키")
+        elif err=="031":
+            print("잘못된 주소형식")
+        elif err=="9NNNN":
+            print("서버오류")
+        return "error",
     
+    json_response = json.loads(req.content)
     country_code = json_response["whois"]["countryCode"]
     
     #IF the Countrycode is not KR(korea) return just country_code
