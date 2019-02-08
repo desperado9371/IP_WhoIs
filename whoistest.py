@@ -4,11 +4,13 @@ import requests
 import json
 
 #########################################################################################################
-def findWhoIs(ip):
+def findWhoIs(key, ip):
     ip_address = ip
     
     # key값 오류 발생시 https://xn--c79as89aj0e29b77z.xn--3e0b707e/kor/whois/openAPI_KeyCre.jsp  서 새로 받으실수 있습니다.
-    key = "2019020711065118499589"
+   # key = "2019020711065118499589"
+    
+    
     url = "http://whois.kisa.or.kr/openapi/whois.jsp?query="+ip_address+"&key="+key+"&answer=json"
 
     req = requests.get(url)
@@ -41,12 +43,10 @@ def findWhoIs(ip):
     
     #IF the Countrycode is not KR(korea) return just country_code
     if country_code!="KR":
-        print(country_code)
         return country_code,
      
     #ELSE return country code + ISP name + user name
     else:
-        print(json_response["whois"]["countryCode"], end=", ")
         if 'PI' in json_response["whois"]["korean"]:
             isp_name="PI : "+json_response["whois"]["korean"]["PI"]["netinfo"]["orgName"]
     
@@ -54,7 +54,6 @@ def findWhoIs(ip):
             isp_name="ISP : "+json_response["whois"]["korean"]["ISP"]["netinfo"]["orgName"]
         if 'user' in json_response["whois"]["korean"]:
             user_name="User : "+ json_response["whois"]["korean"]["user"]["netinfo"]["orgName"]
-        print(isp_name+" "+user_name)
         return country_code, isp_name,user_name
 ############################################################################################################
         
@@ -63,6 +62,9 @@ with open('ip.csv') as file:
     result = open('result.txt','w')
     korea = open('korea.txt','w')
     koscom = open('koscom.txt','w')
+    key_file = open('key.txt','r')
+    key= key_file.readline() 
+    key_file.close();
     
     kr_cnt=0        # 한국 ip 카운터
     koscom_cnt=0    # 코스콤 ip 카운터
@@ -75,11 +77,17 @@ with open('ip.csv') as file:
         
         print('%-14s - '%(ip),end="")
         
-        list = findWhoIs(ip)
+        list = findWhoIs(key, ip)
         
         result.write(ip+" - ")
         
+        if list[0]=="error":
+            continue
+        
+        print(list[0],end="")
+        
         if list[0]=="KR":
+            print(", "+list[1]+", "+list[2],end="")
             kr_cnt+=1
             korea.write(ip+"  -  "+list[1]+" , "+list[2]+"\n")
             if list[1].find("코스콤")!=-1:
@@ -88,6 +96,7 @@ with open('ip.csv') as file:
         for a in list:
             result.write(a+",")
         result.write("\n")
+        print()
         
     print("\n한국소재 IP주소는 {}개 이며,".format(kr_cnt))
     print("코스콤과 연관된 주소는 {}개 입니다.".format(koscom_cnt))
