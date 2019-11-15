@@ -71,7 +71,7 @@ with open('ip.csv') as file:
     csv_data=[]
     
     for line in file.readlines():
-        csv_data.append(line.split(','))
+        csv_data.append(line.split('\n'))
     for ip in csv_data[0]:
         ip=ip.replace(" ","")
         
